@@ -22,9 +22,11 @@ private:
 		bool IsRevealed();
 		void ToggleFlag();
 		bool IsFlagged();
+		void setNeighborMemeCount(int memeCount);
 	private:
 		State state = State::Hidden;
 		bool hasMeme = false;
+		int neighborMemes = -1;
 	};
 public:
 	MemeField(int nMemes);
@@ -36,8 +38,10 @@ private:
 	Tile& TileAt(const Vei2& gridpos);
 	const Tile& TileAt(const Vei2& gridpos) const;
 	Vei2 ScreenToTile(const Vei2& screenPos);
+	int countNeighborMemes(const Vei2& gridPos);
 private:
 	static constexpr int width = 20;
 	static constexpr int height = 20;
+	bool isFucked = false;
 	Tile field[width * height];
 };

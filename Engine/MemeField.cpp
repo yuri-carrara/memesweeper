@@ -4,6 +4,7 @@
 #include "Vei2.h"
 #include "Graphics.h"
 #include "SpriteCodex.h"
+#include <iostream>
 
 void MemeField::Tile::Draw(const Vei2& screenPos, Graphics& gfx) const
 {
@@ -23,7 +24,7 @@ void MemeField::Tile::Draw(const Vei2& screenPos, Graphics& gfx) const
 		}
 		else
 		{
-			SpriteCodex::DrawTile0(screenPos, gfx);
+			SpriteCodex::DrawTileNumberCount(screenPos, neighborMemes, gfx);
 		}
 	}
 }
@@ -68,6 +69,12 @@ bool MemeField::Tile::IsFlagged()
 	return state == State::Flagged;
 }
 
+void MemeField::Tile::setNeighborMemeCount(int memeCount)
+{
+	assert(neighborMemes == -1);
+	neighborMemes = memeCount;
+}
+
 MemeField::MemeField(int nMemes)
 {
 	assert(nMemes > 0 && nMemes < width * height);
@@ -88,17 +95,10 @@ MemeField::MemeField(int nMemes)
 		while (TileAt(spawnPos).HasMeme());
 		TileAt(spawnPos).SpawnMeme(); // then we spawn (we set meme to true)
 	}
-	
-	//for (int i = 0; i < 120;i++)
-	//{
-	//	const Vei2 pos = { xDist(rng), yDist(rng) };
+	for (Vei2 gridPos{ 0,0 }; gridPos.y < height; ++gridPos.y)
+		for (gridPos.x = 0; gridPos.x < width; ++gridPos.x)
+			TileAt(gridPos).setNeighborMemeCount(countNeighborMemes(gridPos));
 
-	//	if (!TileAt(pos).IsRevealed())
-	//	{
-
-	//		TileAt(pos).Reveal();
-	//	}
-	//}
 }
 
 void MemeField::Draw(Graphics& gfx) const
@@ -149,4 +149,24 @@ const MemeField::Tile& MemeField::TileAt(const Vei2& gridpos) const
 Vei2 MemeField::ScreenToTile(const Vei2& screenPos)
 {
 	return Vei2(screenPos) / SpriteCodex::tileSize;
+}
+
+int MemeField::countNeighborMemes(const Vei2& gridPos)
+{
+	int startY = std::max(0, gridPos.y - 1);
+	int startX = std::max(0, gridPos.x - 1);
+	int endY = std::min(gridPos.y + 1, height - 1);
+	int endX = std::min(gridPos.x + 1, width - 1);
+
+	int count = 0;
+
+
+	for (Vei2 gridPos{ startX,startY }; gridPos.y < endY; ++gridPos.y)
+		for (gridPos.x = startX; gridPos.x < endX; ++gridPos.x)
+			if (TileAt(gridPos).HasMeme())
+			{
+				count++;
+			}
+
+	return count;
 }
